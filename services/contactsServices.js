@@ -44,4 +44,28 @@ async function addContact(name, email, phone) {
   return newContact;
 }
 
-export default { listContacts, getContactById, addContact, removeContact };
+async function updateContact(contactId, newContactInfo) {
+  const allContacts = await listContacts();
+  const index = allContacts.findIndex(({ id }) => id === contactId);
+  if (index === -1) return null;
+  const newContact = { ...allContacts[index], ...newContactInfo };
+  const newContactsList = [
+    ...allContacts.slice(0, index),
+    newContact,
+    ...allContacts.slice(index + 1),
+  ];
+
+  await fs.writeFile(
+    contactsPath,
+    JSON.stringify(newContactsList, undefined, 2)
+  );
+  return newContact;
+}
+
+export default {
+  listContacts,
+  getContactById,
+  addContact,
+  removeContact,
+  updateContact,
+};
