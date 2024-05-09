@@ -8,7 +8,7 @@ import contactsService from "../services/contactsServices.js";
 export const getAllContacts = async (_, res, next) => {
   try {
     const data = await contactsService.listContacts();
-    res.status(200).json(data);
+    res.status(200).send(data);
   } catch (error) {
     next(error);
   }
@@ -20,7 +20,7 @@ export const getOneContact = async (req, res, next) => {
     const data = await contactsService.getContactById(id);
     if (!data) throw HttpError(404);
 
-    res.status(200).json(data);
+    res.status(200).send(data);
   } catch (error) {
     next(error);
   }
@@ -32,7 +32,7 @@ export const deleteContact = async (req, res, next) => {
     const data = await contactsService.removeContact(id);
     if (!data) throw HttpError(404);
 
-    res.status(200).json(data);
+    res.status(200).send(data);
   } catch (error) {
     next(error);
   }
@@ -46,7 +46,7 @@ export const createContact = async (req, res, next) => {
     }
     const { name, email, phone } = req.body;
     const newContact = await contactsService.addContact(name, email, phone);
-    res.status(201).json(newContact);
+    res.status(201).send(newContact);
   } catch (error) {
     next(error);
   }
@@ -68,7 +68,7 @@ export const updateContact = async (req, res, next) => {
     );
 
     if (!updatedContact) throw HttpError(404);
-    res.status(200).json(updatedContact);
+    res.status(200).send(updatedContact);
   } catch (error) {
     next(error);
   }
