@@ -7,9 +7,9 @@ import {
   updateStatusContactSchema,
 } from "../schemas/contactsSchemas.js";
 
-export const getAllContacts = async (_, res, next) => {
+export const getAllContacts = async (req, res, next) => {
   try {
-    const data = await Contact.find();
+    const data = await Contact.find({ owner: req.user.id });
     res.status(200).json(data);
   } catch (error) {
     next(error);
@@ -20,9 +20,11 @@ export const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!isValidObjectId(id)) throw HttpError(400, `${id} is not valid id`);
-    const data = await Contact.findById(id);
-    if (!data) throw HttpError(404);
-    res.status(200).json(data);
+
+    const contact = await Contact.findOne({ _id: id, owner: req.user.id });
+    if (!contact) throw HttpError(404, "Contact not found");
+
+    res.status(200).json(contact);
   } catch (error) {
     next(error);
   }
@@ -32,9 +34,14 @@ export const deleteContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!isValidObjectId(id)) throw HttpError(400, `${id} is not valid id`);
-    const data = await Contact.findByIdAndDelete(id);
-    if (!data) throw HttpError(404);
-    res.status(200).json(data);
+
+    const contact = await Contact.findOneAndDelete({
+      _id: id,
+      owner: req.user.id,
+    });
+    if (!contact) throw HttpError(404, "Contact not found");
+
+    res.status(200).json(contact);
   } catch (error) {
     next(error);
   }
@@ -46,7 +53,10 @@ export const createContact = async (req, res, next) => {
     if (error) {
       throw HttpError(400, error.message);
     }
-    const newContact = await Contact.create(req.body);
+    const newContact = await Contact.create({
+      ...req.body,
+      owner: req.user.id,
+    });
     res.status(201).json(newContact);
   } catch (error) {
     next(error);
@@ -66,11 +76,13 @@ export const updateContact = async (req, res, next) => {
     if (!req.body || Object.keys(req.body).length === 0)
       throw HttpError(400, "Body must have at least one field");
 
-    const updatedContact = await Contact.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+    const updatedContact = await Contact.findOneAndUpdate(
+      { _id: id, owner: req.user.id },
+      req.body,
+      { new: true }
+    );
 
-    if (!updatedContact) throw HttpError(404);
+    if (!updatedContact) throw HttpError(404, "Contact not found");
     res.status(200).json(updatedContact);
   } catch (error) {
     next(error);
@@ -93,11 +105,15 @@ export const updateStatusContact = async (req, res, next) => {
         "Body must have an object with key 'favorite' and its value boolean"
       );
 
-    const updatedContact = await Contact.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+    const updatedContact = await Contact.findOneAndUpdate(
+      { _id: id, owner: req.user.id },
+      req.body,
+      {
+        new: true,
+      }
+    );
 
-    if (!updatedContact) throw HttpError(404);
+    if (!updatedContact) throw HttpError(404, "Contact not found");
     res.status(200).json(updatedContact);
   } catch (error) {
     next(error);
