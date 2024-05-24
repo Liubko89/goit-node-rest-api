@@ -3,8 +3,8 @@ import morgan from "morgan";
 import cors from "cors";
 import contactsRouter from "./routes/contactsRouter.js";
 import mongoose from "mongoose";
-import usersRouter from "./routes/usersRouter.js";
-import auth from "./middlewares/auth.js";
+import authRouter from "./routes/authRouter.js";
+import authMiddleware from "./middlewares/auth.js";
 
 const app = express();
 
@@ -14,8 +14,8 @@ app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/contacts", auth, contactsRouter);
-app.use("/api/users", usersRouter);
+app.use("/api/contacts", authMiddleware, contactsRouter);
+app.use("/api/users", authRouter);
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });

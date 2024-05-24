@@ -52,12 +52,34 @@ export const login = async (req, res, next) => {
       SECRET_KEY,
       { expiresIn: "23h" }
     );
-    console.log(token);
+
+    await User.findByIdAndUpdate(user._id, { token }, { new: true });
 
     res.json({
       token,
       user: { email: user.email, subscription: user.subscription },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const logout = async (req, res, next) => {
+  try {
+    await User.findByIdAndUpdate(req.user.id, { token: null }, { new: true });
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCurrentUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res
+      .status(200)
+      .json({ email: user.email, subscription: user.subscription })
+      .end();
   } catch (error) {
     next(error);
   }
