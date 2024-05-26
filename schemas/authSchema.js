@@ -6,3 +6,7 @@ export const authSchema = Joi.object({
   password: Joi.string().min(6).required(),
   email: Joi.string().pattern(emailRegexp).required(),
 });
+
+export const updateStatusSchema = Joi.object({
+  subscription: Joi.string().valid("starter", "pro", "business").required(),
+});

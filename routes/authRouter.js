@@ -4,6 +4,7 @@ import {
   login,
   logout,
   register,
+  updateUserStatus,
 } from "../controllers/auth.js";
 import authMiddleware from "../middlewares/auth.js";
 
@@ -13,5 +14,6 @@ authRouter.post("/register", register);
 authRouter.post("/login", login);
 authRouter.post("/logout", authMiddleware, logout);
 authRouter.get("/current", authMiddleware, getCurrentUser);
+authRouter.patch("/current", authMiddleware, updateUserStatus);
 
 export default authRouter;

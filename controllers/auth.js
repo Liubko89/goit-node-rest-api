@@ -1,6 +1,6 @@
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
-import { authSchema } from "../schemas/authSchema.js";
+import { authSchema, updateStatusSchema } from "../schemas/authSchema.js";
 import HttpError from "../helpers/HttpError.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -76,6 +76,25 @@ export const logout = async (req, res, next) => {
 export const getCurrentUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
+    res
+      .status(200)
+      .json({ email: user.email, subscription: user.subscription })
+      .end();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUserStatus = async (req, res, next) => {
+  try {
+    const { error } = updateStatusSchema.validate(req.body);
+    if (error) {
+      throw HttpError(400, error.message);
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id, req.body, {
+      new: true,
+    });
     res
       .status(200)
       .json({ email: user.email, subscription: user.subscription })
