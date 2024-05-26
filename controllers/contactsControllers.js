@@ -9,7 +9,16 @@ import {
 
 export const getAllContacts = async (req, res, next) => {
   try {
-    const data = await Contact.find({ owner: req.user.id });
+    const { page = 1, limit = 10, favorite = false } = req.query;
+    const skip = (page - 1) * limit;
+
+    const params = { owner: req.user.id };
+    if (favorite) params.favorite = true;
+
+    const data = await Contact.find(params, null, {
+      skip,
+      limit,
+    });
     res.status(200).json(data);
   } catch (error) {
     next(error);
