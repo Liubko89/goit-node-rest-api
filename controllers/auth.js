@@ -5,6 +5,7 @@ import HttpError from "../helpers/HttpError.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
+import gravatar from "gravatar";
 
 const { SECRET_KEY } = process.env;
 
@@ -21,7 +22,11 @@ export const register = async (req, res, next) => {
 
     const hashPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({ ...req.body, password: hashPassword });
+    const newUser = await User.create({
+      ...req.body,
+      password: hashPassword,
+      avatarURL: gravatar.url(email),
+    });
 
     res.status(201).json({
       user: { email: newUser.email, subscription: newUser.subscription },

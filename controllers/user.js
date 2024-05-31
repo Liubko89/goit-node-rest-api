@@ -6,6 +6,7 @@ import Jimp from "jimp";
 
 export const changeAvatar = async (req, res, next) => {
   try {
+    if (!req.file) throw HttpError(400);
     const tmpPath = req.file.path;
     const newPath = path.resolve("public", "avatars", req.file.filename);
 
@@ -19,7 +20,7 @@ export const changeAvatar = async (req, res, next) => {
     );
     if (!user) throw HttpError(401, "Not authorized");
 
-    res.json({ avatarURL: user.avatarURL });
+    res.json({ avatarURL: `/avatars/${req.file.filename}` });
   } catch (error) {
     next(error);
   }
