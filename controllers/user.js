@@ -13,14 +13,16 @@ export const changeAvatar = async (req, res, next) => {
     (await Jimp.read(tmpPath)).resize(250, 250).write(tmpPath);
     await fs.rename(tmpPath, newPath);
 
+    const newAvatarURL = `/avatars/${req.file.filename}`;
+
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { avatarURL: newPath },
+      { avatarURL: newAvatarURL },
       { new: true }
     );
     if (!user) throw HttpError(401, "Not authorized");
 
-    res.json({ avatarURL: `/avatars/${req.file.filename}` });
+    res.json({ avatarURL: newAvatarURL });
   } catch (error) {
     next(error);
   }
