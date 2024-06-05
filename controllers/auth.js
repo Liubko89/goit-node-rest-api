@@ -3,11 +3,12 @@ import bcrypt from "bcryptjs";
 import { authSchema, updateStatusSchema } from "../schemas/authSchema.js";
 import HttpError from "../helpers/HttpError.js";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import gravatar from "gravatar";
+import crypto from "node:crypto";
+import { sendMail } from "../mail.js";
 
-const { SECRET_KEY } = process.env;
+const { SECRET_KEY, PORT, MY_EMAIL } = process.env;
 
 export const register = async (req, res, next) => {
   try {
@@ -21,11 +22,21 @@ export const register = async (req, res, next) => {
     if (user) throw HttpError(409, "Email in use");
 
     const hashPassword = await bcrypt.hash(password, 10);
+    const verificationToken = crypto.randomUUID();
+
+    sendMail({
+      to: email,
+      from: MY_EMAIL,
+      subject: "Email verification",
+      text: `To verify your email click on the link http://localhost:3000/api/users/verify/${verificationToken}`,
+      html: `<strong>To verify your email click on the <a href="http://localhost:${PORT}/api/users/verify/${verificationToken}">link</a></strong>`,
+    });
 
     const newUser = await User.create({
       ...req.body,
       password: hashPassword,
       avatarURL: gravatar.url(email),
+      verificationToken,
     });
 
     res.status(201).json({
@@ -47,6 +58,8 @@ export const login = async (req, res, next) => {
 
     const user = await User.findOne({ email });
     if (!user) throw HttpError(401, "Email or password is wrong");
+
+    if (!user.verify) throw HttpError(401, "Email not verified");
 
     const comparePassword = await bcrypt.compare(password, user.password);
     if (!comparePassword) throw HttpError(401, "Email or password is wrong");

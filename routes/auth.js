@@ -8,11 +8,17 @@ import {
 } from "../controllers/auth.js";
 import authMiddleware from "../middlewares/auth.js";
 import uploadMiddleware from "../middlewares/upload.js";
-import { changeAvatar } from "../controllers/user.js";
+import {
+  changeAvatar,
+  secondEmailVerification,
+  verifyEmail,
+} from "../controllers/user.js";
 
 const authRouter = express.Router();
 
 authRouter.post("/register", register);
+authRouter.get("/verify/:verificationToken", verifyEmail);
+authRouter.post("/verify/", secondEmailVerification);
 authRouter.post("/login", login);
 authRouter.post("/logout", authMiddleware, logout);
 authRouter.get("/current", authMiddleware, getCurrentUser);
